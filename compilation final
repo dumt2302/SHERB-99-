@@ -190,15 +190,15 @@ void virage(int VirageDegre,bool robot)
 
 void TiroirOuver()
 {
-  SERVO_SetAngle(0, 0);//toiroire s'ouvre
-  SERVO_SetAngle(0, 0);
+  SERVO_SetAngle(0, 180);//toiroire s'ouvre
+  //SERVO_SetAngle(1, 180);
   delay(2000);
 }
 
 Void Toiroirefermer()
 {
-  SERVO_SetAngle(0, 180); //moteur force pour le barre
-  SERVO_SetAngle(1, 180); 
+  SERVO_SetAngle(0, 0); //moteur force pour le barre
+ // SERVO_SetAngle(1, 0); 
   delay(2000);
 }
 
@@ -319,5 +319,4 @@ void loop() //fonction qui permet a l'utilisateur de prendre son taux d'alchool
   }
 
 }
-
 
