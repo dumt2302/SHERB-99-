@@ -13,6 +13,8 @@
 #define LED_GREEN2 6
 #define LED_GREEN3 7
 
+#define nbrEclairage 4 //Détermine le nombre de fois où les LEDs alternent
+
 int buzzer = 36;
 int out; /* la sortie du breatheanalyzer*/
 
@@ -26,8 +28,9 @@ void setup()
     pinMode(LED_WHITE, OUTPUT);
     pinMode(LED_RED, OUTPUT);
     pinMode(buzzer,OUTPUT);
-
-      
+    pinMode(LED_GREEN1, OUTPUT);
+    pinMode(LED_GREEN2, OUTPUT);
+    pinMode(LED_GREEN3, OUTPUT);
 }
 
 void loop()
@@ -93,3 +96,24 @@ void loop()
     }  
 }
 
+void LumierePolice()
+{
+    
+    for(int i = 0; i<nbrEclairage; i++)
+    {
+        digitalWrite(LED_BLUE,HIGH);
+        delay(500);
+        digitalWrite(LED_BLUE,LOW);
+        digitalWrite(LED_WHITE,HIGH);
+        delay(500);
+        digitalWrite(LED_WHITE,LOW);
+        digitalWrite(LED_RED,HIGH);
+        delay(500);
+        digitalWrite(LED_RED,LOW);
+     }
+        digitalWrite(buzzer,300); /* 300 etant la valeur de hz du buzzer */
+        delay(10);
+        digitalWrite(buzzer,800);
+        delay(10);
+        digitalWrite(buzzer, 0);
+}
