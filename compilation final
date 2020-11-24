@@ -284,7 +284,25 @@ void LumierePolice()
 //lorsque l'alco-test est réussi
 void LumiereVert()
 {
-
+    digitalWrite(LED_GREEN1,HIGH);
+    delay(500);
+    digitalWrite(LED_GREEN2,HIGH);
+    delay(500);
+    digitalWrite(LED_GREEN3,HIGH);
+    delay(500);
+    digitalWrite(LED_GREEN1,LOW);
+    delay(500);
+    digitalWrite(LED_GREEN2,LOW);
+    delay(500);
+    digitalWrite(LED_GREEN3,LOW);
+    delay(500);
+    
+    for (int thisNote = 0; thisNote < 8; thisNote++) 
+    {
+        // pin8 output the voice, every scale is 0.5 sencond
+        tone(8, melody[thisNote], duration);
+        delay(1000);
+    }
 }
 
 //fonction alcoo-test
