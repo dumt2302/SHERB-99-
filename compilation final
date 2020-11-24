@@ -261,7 +261,24 @@ void TestFail();
 //lumiere rouge ou bleu et rouge lorsque l'alcoo test est échoué
 void LumierePolice()
 {
-  
+    
+    for(int i = 0; i<nbrEclairage; i++)
+    {
+        digitalWrite(LED_BLUE,HIGH);
+        delay(500);
+        digitalWrite(LED_BLUE,LOW);
+        digitalWrite(LED_WHITE,HIGH);
+        delay(500);
+        digitalWrite(LED_WHITE,LOW);
+        digitalWrite(LED_RED,HIGH);
+        delay(500);
+        digitalWrite(LED_RED,LOW);
+     }
+        digitalWrite(buzzer,300); /* 300 etant la valeur de hz du buzzer */
+        delay(10);
+        digitalWrite(buzzer,800);
+        delay(10);
+        digitalWrite(buzzer, 0);
 }
 
 //lorsque l'alco-test est réussi
