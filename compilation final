@@ -19,7 +19,6 @@
 #define nbrEclairage 4 //Détermine le nombre de fois où les LEDs alternent
 
 int buzzer = 36;
-int out; /* la sortie du breatheanalyzer*/
 
 int melody[] = {523, 587, 659, 698, 784, 880, 988, 1046};
 int duration = 500;  
