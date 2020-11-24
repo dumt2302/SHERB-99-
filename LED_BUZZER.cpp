@@ -2,10 +2,16 @@
 #include <librobus.h>
 
 
-#define redpin A3
-#define greenpin A5
-#define bluepin A6 
-#define whitepin A7 
+
+
+
+#define LED_BLUE 2 
+#define LED_WHITE 3 
+#define LED_RED 4
+
+#define LED_GREEN1 5
+#define LED_GREEN2 6
+#define LED_GREEN3 7
 
 int buzzer = 36;
 int out; /* la sortie du breatheanalyzer*/
@@ -19,7 +25,6 @@ void setup()
     pinMode(LED_BLUE, OUTPUT);
     pinMode(LED_WHITE, OUTPUT);
     pinMode(LED_RED, OUTPUT);
-    pinMode
     pinMode(buzzer,OUTPUT);
 
       
@@ -87,3 +92,4 @@ void loop()
         }
     }  
 }
+
