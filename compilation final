@@ -230,7 +230,14 @@ void Activationdubouton()
 
 void setup()
 {
-
+    Serial.begin(9600);
+    pinMode(LED_BLUE, OUTPUT);
+    pinMode(LED_WHITE, OUTPUT);
+    pinMode(LED_RED, OUTPUT);
+    pinMode(buzzer,OUTPUT);
+    pinMode(LED_GREEN1, OUTPUT);
+    pinMode(LED_GREEN2, OUTPUT);
+    pinMode(LED_GREEN3, OUTPUT);
 }
 
 //Si la personne ne pette pas la balloon
