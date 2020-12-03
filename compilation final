@@ -1,103 +1,43 @@
 #include <Arduino.h>
-#include <librobus.h>
+#include "LiquidCrystal.h"
+#include <SPI.h>
 #include <Wire.h>
-#include "Adafruit_TCS34725.h" 
+#include "LibRobus.h"
 
-#define redpin A3
-#define greenpin A5
-#define bluepin A6 
-// for a common anode LED, connect the common pin to +5V
-// for common cathode, connect the common to ground
+//valeur alcool emis
+int val;
 
-// set to false if using a common cathode LED
-#define commonAnode true
+//Position pin des boutons
+int boutonStart = 41;
+int boutonRestart = 43;
+int boutonStop = 45;
 
-// our RGB -> eye-recognized gamma color
-byte gammatable[256];
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+//PIN arduino
+LiquidCrystal lcd(8,9,10,11,12,13);
+int analogPin = 0;
+//manque PIN led et detecteur de poid
 
-
-int32_t EncodeurDroite = 0;
-int32_t EncodeurGauche = 0;
-int32_t sumDiff = 0;
-bool A = 0;
-bool B = 1;
-int VirageDegre;
-bool Bouton = 0;
-bool Pression = 0;
-
-
-void MasterSlave(float MasterMOTOR, int32_t MasterENCODEUR, int32_t SlaveENCODEUR) //Prends en entrée la valeur du moteur maitre et les valeurs d'encodeur
+int readAlcohol()
 {
-  float SlaveMOTOR;                                       //valeur du moteur slave
-  int32_t Diff_ENCODEUR = MasterENCODEUR - SlaveENCODEUR; //différence de pas entre les deux moteurs
-  sumDiff += Diff_ENCODEUR;
-  float kp = 0.001;                                             //valeur de la constante P kp = 0.001
-  float ki = 0.00003;                                           //valeur de la constante I ki = 0.00003                            
-  SlaveMOTOR = MasterMOTOR + kp * Diff_ENCODEUR + ki * sumDiff; //équation de la valeur du moteur slave
-  MOTOR_SetSpeed(1, SlaveMOTOR);
-}
+  int val = 0;
+  int val1 = 0;
+  int val2 = 0;
+  int val3 = 0; 
 
-void Avancer(int DistanceCm)
-{
-
-
-  ENCODER_ReadReset(0); //reset des encodeurs
-  ENCODER_ReadReset(1);
-  float vitesse;
-  float Vmax = 0.7; //vitesse max
-  float Vmin = 0.1; //vitesse min
-  float a = 0.03;   //acceleration (chiffre magique)
-  float distance = 0;
-  int compteur = 1;
-
-
-  float y1 = a * distance + Vmin; //fonction d'acceleration
-  float y2 = Vmax;  //fonction de vitesse max
-  float y3 = a * (DistanceCm - distance) + Vmin;  //fonction de decceleration
-  #if MOTOR_REVERSED  //car un encodeur est inversé
-  compteur = -1;
-
-#endif
-   while (DistanceCm > distance)
-  {
-    y1 = a * distance + Vmin;
-    y2 = Vmax;
-    y3 = a * (DistanceCm - distance) + Vmin;
-    if(y1 < y2 && y1 < y3)  //l'equation utilisee pour trouver la vitesse est toujour celle donnant le plus petit resultat dans le temps
-    {
-      distance = ENCODER_Read(0) * 0.0074809175 * compteur;
-      y1 = a * distance + Vmin;
-      vitesse = y1;
-      MOTOR_SetSpeed(0, vitesse);
-      MasterSlave(vitesse, ENCODER_Read(0), ENCODER_Read(1));
-      delay(10);
-
-    }
-    else if(y2 < y1 && y2 < y3)
-    {
-      distance = ENCODER_Read(0) * 0.0074809175 * compteur;
-      y2 = Vmax;
-      vitesse = y2;
-      MOTOR_SetSpeed(0, vitesse);
-      MasterSlave(vitesse, ENCODER_Read(0), ENCODER_Read(1));
-      delay(10);
-    }
-    else
-    {
-      distance = ENCODER_Read(0) * 0.0074809175 * compteur;
-      y3 = a * (DistanceCm - distance) + Vmin;
-      vitesse = y3;
-      MOTOR_SetSpeed(0, vitesse);
-      MasterSlave(vitesse, ENCODER_Read(0), ENCODER_Read(1));
-      delay(10);
-    }
-  }
-
+  lcd.clear();
+  val1 = analogRead(analogPin); 
   delay(10);
-}
+  val2 = analogRead(analogPin); 
+  delay(10);
+  val3 = analogRead(analogPin);
+  
+  val = (val1+val2+val3)/3;
+  return val;
+ }
 
-void virage(int VirageDegre,bool robot)
+
+
+void virage(int VirageDegre)
 {
   ENCODER_ReadReset(1);
   ENCODER_ReadReset(0);
@@ -109,14 +49,8 @@ void virage(int VirageDegre,bool robot)
   //définition des variables
     
     int Arondir;
-    float UnPulse;
-    if (robot==0){
-     UnPulse= 0.0469;
-      }
-   else{
-     UnPulse = 0.0469;
-     }
-
+    float UnPulse = 0.0469;
+  
     float ValeurPulse;
     //trouve le nombre de pulse nécessaire au virage
     ValeurPulse = abs(VirageDegre/UnPulse);
@@ -185,138 +119,298 @@ void virage(int VirageDegre,bool robot)
    ENCODER_Reset(0);
    ENCODER_Reset(1);
 
-   
 }
 
-void TiroirOuver()
+bool BoutonStart()
 {
-  SERVO_SetAngle(0, 180);//toiroire s'ouvre
-  //SERVO_SetAngle(1, 180);
-  delay(2000);
-}
-
-Void Toiroirefermer()
-{
-  SERVO_SetAngle(0, 0); //moteur force pour le barre
- // SERVO_SetAngle(1, 0); 
-  delay(2000);
-}
-
-Void PressurePlate()
-{
-  // tout depend de la sotie de la pressure plate avec variable globale qui change
-  
-}
-
-void Activationdubouton()
-{
-  //il faut savoir la sortie du bouton avec variable globale qui se modifie
-}
-
-void setup()
-{
-
-}
-
-//Si la personne ne pette pas la balloon
-void TestPass()
-{
-  LumiereVert();
-  TiroirOuver();
-}
-
-//pete la bine et la balloon
-void TestFail();
-{
-  //Affichier a l'ecran (Vous avez trop bu, appelez un Uber)
-  LumierePolice();
-  virage(720,A);
-  delay(1000);
-  virage(-720,A);
-  delay(10000);
-}
-
-//lumiere rouge ou bleu et rouge lorsque l'alcoo test est échoué
-void LumierePolice()
-{
-  
-}
-
-//lorsque l'alco-test est réussi
-void LumiereVert()
-{
-
-}
-
-//fonction alcoo-test
-int Breathalyzer()
-{
-  //si 0 alchool return 0
-  //si trop chaud return 1
-  //si erreur return -1
-  if(trop sobre)
+  bool interaction;
+  if(digitalRead(boutonStart) == LOW)
   {
-    return 0;
+    lcd.clear();
+    lcd.setCursor(0,1);
+    interaction = true;
   }
-  else if (trop chaud)
+  else
+  if(digitalRead(boutonStart) == HIGH)
   {
-    return 1;
+    lcd.clear();
+    lcd.setCursor(0,1);
+    interaction = false;
+  }
+  
+  return interaction;
+}
+
+bool BoutonRestart()
+{
+  bool interaction;
+  if(digitalRead(boutonRestart) == LOW)
+  {
+    lcd.clear();
+    lcd.setCursor(0,1);
+    interaction = true;
+  }
+  else
+  if(digitalRead(boutonRestart) == HIGH)
+  {
+    lcd.clear();
+    lcd.setCursor(0,1);
+    interaction = false;
+  }
+  
+  return interaction;
+}
+
+bool BoutonStop()
+{
+  bool interaction;
+  if(digitalRead(boutonStop) == LOW)
+  {
+    lcd.clear();
+    lcd.setCursor(0,1);
+    interaction = true;
+  }
+  else
+  if(digitalRead(boutonStop) == HIGH)
+  {
+    lcd.clear();
+    lcd.setCursor(0,1);
+    interaction = false;
+  }
+  
+  return interaction;
+}
+
+void capteurdistance()
+{
+  int i=1;
+  int distance;
+  while (i==1)
+  {
+    distance=analogRead(3);
+    //lcd.print(distance);
+    //lcd.clear();
+    if (distance<=600 && distance>=250)
+    {
+      i=0;
+    }
+    delay(50);
+  }
+  delay(5000);
+  SERVO_SetAngle(0,32);
+}
+
+void printTexteIndicateur(int value)
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  
+  if(value<200)
+  {
+      lcd.print("Tu es sobre.");
+      lcd.setCursor(0,1);
+      lcd.print("0.00 mg/L");
+  }
+  else if (value>=200 && value<275)
+  {
+      lcd.print("Tu as bu un peu");
+      lcd.setCursor(0,1);
+      lcd.print("0.04 mg/L");
+  }
+  else if (value>=275 && value<375)
+  {
+      lcd.print("Fait attention");
+      lcd.setCursor(0,1);
+      lcd.print("0.07 mg/L");
+  }
+  else if (value>=375 && value <550)
+  {
+      lcd.print("Conduit pas!");
+      lcd.setCursor(0,1);
+      lcd.print("0.1 mg/L");
   }
   else 
   {
-    return-1;
+    lcd.print("Tu es soaul");
+    lcd.setCursor(0,1);
+    lcd.print("0.15 mg/L");
   }
-  
-}
-
-void loop() //fonction qui permet a l'utilisateur de prendre son taux d'alchool
+ }
+ 
+void action(int value)
 {
-  SERVO_Enable(0);//active les servomoteurs 
-  SERVO_Enable(1);
+  lcd.setCursor(0,0);
 
-  //Affichier a l'ecran (Bonsoir peser sur le bouton lors que vous etre pret)
-
-  Toiroirefermer();
-  Activationdubouton();
-
-  //Affichier a l'ecran(Veiller deposer vos cles)
-
-  if (Bouton !=0)// lorsque l'utilisateur pese sur le bouton activation de la fonction
+  //ajun
+  if (value<275)
   {
-    TiroirOuver();
-  
-    PressurePlate();
-    if(Pression != 0)
-    {
-      delay(5000);
-      //Affichier a l'ecran(Merci)
-      Toiroirefermer();
-    }
-    
+    //fonction dels verts inserer ici
+
+    SERVO_SetAngle(0,90);
+    delay(3000);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Bonne soiree");
     delay(5000);
-    
-    chaudoupas=Breathalyzer();
-    
-    while (chaudoupas!=1 || chaudoupas!=0)
-    {
-      //affchier a l ecran ERREUR
-      chaudoupas=Breathalyzer();
-    }
+  }
 
-    if (chaudoupas=0)
-    {
-      TestPass();
-    }
-    
-    else
-    {
-      TestFail();
-    }
+  //un peu bu
+  else if (value>=275 && value<375)
+  {
+    //fonction del jaune inserer ici
+    SERVO_SetAngle(0,90);
+    delay(3000);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Faite attention");
+    lcd.setCursor(0,1);
+    lcd.print("Bonne soiree");
+    delay(5000);
+  }
 
-    TiroirOuver();
-    SERVO_Disable(1);
-    SERVO_Disable(0);
+  //peter
+  else 
+  {
+    //fonction del police inserer ici
+  
+    delay(3000);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Prenez un taxi");
+    lcd.setCursor(0,1);
+    lcd.print("Bonne soiree");
+    delay(2000);
+    virage(1080);
   }
 
 }
 
+void setup()   {     
+ BoardInit();  
+ Serial.begin(9600);         
+ lcd.begin(16,2);
+ lcd.setCursor(0,0);
+ pinMode(boutonStart, INPUT_PULLUP);
+ pinMode(boutonStop, INPUT_PULLUP);
+ pinMode(boutonRestart, INPUT_PULLUP);
+ pinMode(0, INPUT);
+ SERVO_Enable(0);
+}
+
+
+void loop() {  
+  //place le covercle parfait
+  SERVO_SetAngle(0,32);
+  //Vérifie l'intéractions
+  bool interaction = false;
+  bool reessayer = false;
+  bool arreter = false;
+
+  //Interaction avec l'usager.
+  delay(500);
+  
+
+  //fonction bouton a inserer ici
+  do
+  {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Bonsoir peser");
+    lcd.setCursor(0,1);
+    lcd.print("bouton vert");
+    delay(50);
+  } while (BoutonStart()==false);
+  
+
+  delay(1000);
+
+  //ouverture du tirroir
+  SERVO_SetAngle(0,90);
+
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Veiller deposer");
+    lcd.setCursor(0,1);
+    lcd.print("vos cles");
+
+    //fonction detecteur de cle
+    capteurdistance();
+    delay(2000);
+
+  do
+  {
+    reessayer = false;
+    //creation d'un timer
+    for(int i=5; i > 0; i--)
+   {
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Souffler dans:");
+      lcd.setCursor(0,1);
+      lcd.print(i);
+      delay(1000);
+    }
+
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Souffler");
+    lcd.setCursor(0,1);
+    lcd.print("5sec !");
+    delay(2000);
+
+    //prend la valeur de l'alcotest a 2sec /5sec
+    val = readAlcohol();
+   delay(1000);
+
+    //affiche la valeur d'alchool emis
+    printTexteIndicateur(val);
+
+    //fait l'action
+    action(val);
+    SERVO_SetAngle(0,32);
+
+     do
+      {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Restart/Stop");
+        lcd.setCursor(0,1);
+        lcd.print("jaune/rouge");
+        delay(100);
+
+        if(BoutonStop() == true)
+        {
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print("Arret");
+          lcd.setCursor(0,1);
+          lcd.print("Bonne journee");
+          delay(2000);
+          interaction = true;
+        }
+        if(BoutonRestart() == true || BoutonStop() == true)
+        {
+          interaction = true;
+          if(BoutonRestart() == true)
+            reessayer = true;
+          if(BoutonStop() == true)
+            arreter = true;
+        }
+        else
+          if(BoutonStart() == true)
+          {
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("Erreur de saisie");
+          }
+        delay(100);
+      }while(interaction == false);
+      interaction = false;
+      delay(100);
+  }while(reessayer == true && arreter == false);
+  delay(1500);
+  virage(45);
+  virage(-90);
+  virage(45);
+  delay(2000);
+}
