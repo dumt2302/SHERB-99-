@@ -10,8 +10,11 @@
 #include<vector>
 #include <stdio.h>
 #include<string>
+#include <iomanip>
 
 using namespace std;
+
+
 const int MAXLigne = 17;
 const int MAXColonne = 35;
 const int PointMax = 50;
@@ -22,6 +25,8 @@ const int rouleauPoint = 111;
 const int rien = 000;
 const int Covid1 = 87;
 
+void jouer();
+void instruction();
 void goToXY(short ligne, short colonne);
 void getKeyPress();
 void montreMap();
@@ -34,7 +39,7 @@ bool stopCounting = false;
 //Permet de gérer les intervales de temps
 clock_t startTime = 0, endTime = 0;
 int vie = 3;
-int vitesseCovid = 2;
+int vitesseCovid = 3;
 
 // Position initiale du joueur
 int vieI = 15; int vieJ = 22;
@@ -257,6 +262,94 @@ void TrouverChemin(int sx, int sy, int x, int y)
 
 int main()
 {
+	char choixM;
+	HANDLE  hConsole;
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	do
+	{
+		do {
+			SetConsoleTextAttribute(hConsole, 14);
+			cout << endl;
+			cout << "         #######         " << endl;
+			cout << "       ###########       " << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "       ## ##### ##       " << endl;
+			cout << "       ###########       " << endl;
+			cout << "         #######         " << endl;
+			cout << "      #############      " << endl;
+			cout << "     ##  #######  ##     " << endl;
+			cout << "     #   #######  ";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "#";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#" << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "         #######   ";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#" << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "         #######   ";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#" << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "        ##     ##  ";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#" << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "        #       #  ";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#" << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "       ##       ## ";
+			SetConsoleTextAttribute(hConsole, 6);
+			cout << "#" << endl;
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << endl;
+
+			cout << "  (1): Jouer" << endl;
+			cout << "  (2): Instruction " << endl;
+			cout << "  (3): Personnification " << endl;
+			cout << "  (4): Score " << endl;
+			cout << "  (5): Quitter " << endl;
+			cout << "  Choix : ";
+
+			cin >> choixM;
+
+			if (choixM != '1' && choixM != '2' && choixM != '3' && choixM != '4' && choixM != '5')
+			{
+				cout << "\nErreur de saisie: veuillez choisir entre les valeurs de 1 a 5" << endl;
+				Sleep(1000);
+			}
+			system("cls");
+		} while (choixM != '1' && choixM != '2' && choixM != '3' && choixM != '4' && choixM != '5');
+
+		switch (choixM)
+		{
+		case '1':
+			jouer();
+			break;
+		case '2':
+			instruction();
+			break;
+		case '3':
+			break;
+		case '4':
+			break;
+		case '5':
+			cout << "Merci et bonne journee" << endl;
+			break;
+		}
+	} while (choixM != '5');
+
+	
+
+	return 0;
+}
+
+void jouer()
+{
 	HANDLE  hConsole;
 	int k;
 
@@ -284,7 +377,7 @@ int main()
 	int cadre = 0;
 
 	TrouverChemin(cx, cy, x, y);
-	
+
 	do
 	{
 		cx = covid1J;
@@ -302,7 +395,7 @@ int main()
 		x = vieJ;
 		y = vieI;
 
-		if (ens_x != x || ens_y != y) 
+		if (ens_x != x || ens_y != y)
 		{
 			TrouverChemin(cx, cy, x, y);
 		}
@@ -324,7 +417,7 @@ int main()
 		k = 14;
 		SetConsoleTextAttribute(hConsole, k);
 		//Permet de gérer la vitesse du covid
-		if (cadre % vitesseCovid == 0 && marche_queue.size() != 0) 
+		if (cadre % vitesseCovid == 0 && marche_queue.size() != 0)
 		{
 			cx = marche_queue.back().x;
 			cy = marche_queue.back().y;
@@ -345,8 +438,8 @@ int main()
 				SetConsoleTextAttribute(hConsole, k);
 				cout << levelMatrix[covid1I][covid1J];
 			}
-		else
-			cout << ' ';
+			else
+				cout << ' ';
 
 		if (twistitiOn == true)
 		{
@@ -420,9 +513,15 @@ int main()
 			goToXY(30, 19);
 			cout << "         ";
 		}
+		// Commence prise de valeurs
 
+
+
+		// Fin prise de valeurs
 	} while (vie != 0 && nbrPoint < PointMax);
 
+	nbrPoint = 0;
+	vie = 3;
 
 	if (nbrPoint >= PointMax)
 	{
@@ -440,8 +539,97 @@ int main()
 	cout << "\tPartie terminee" << endl;
 	Sleep(1000);
 	system("pause");
+	system("cls");
+	SetConsoleTextAttribute(hConsole, 15);
+}
 
-	return 0;
+void instruction()
+{
+	char choixI;
+	char retourner;
+	HANDLE  hConsole;
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	system("cls");
+
+	do 
+	{
+		do
+		{
+			cout << "(1): Mouvement" << endl;
+			cout << "(2): But" << endl;
+			cout << "(3): Info lors de jeux" << endl;
+			cout << "(4): Quitter" << endl;
+			cout << "Choix : ";
+			cin >> choixI;
+
+			if (choixI != '1' && choixI != '2' && choixI != '3' && choixI != '4')
+			{
+				cout << "\nErreur de saisie" << endl;
+				Sleep(1000);
+			}
+			system("cls");
+
+		} while (choixI != '1' && choixI != '2' && choixI != '3' && choixI != '4');
+
+		switch (choixI)
+		{
+		case '1':
+			cout << "Mouvement:" << endl << endl;
+			cout << "\tarrow ^: Amene le personnage a bouger vers le haut" << endl;
+			cout << "\tarrow <: Amene le personnage a bouger vers la gauche" << endl;
+			cout << "\tarrow >: Amene le personnage a bouger vers la droite" << endl;
+			cout << "\tarrow v: Amene le personnage a bouger vers le bas" << endl << endl;
+
+			system("pause");
+			break;
+		case '2':
+			cout << "But:" << endl << endl;
+			cout << "Le but du jeux est de ramasser tous les rouleaux presents" << endl;
+			cout << "sur la carte sans se faire attraper par la ou les virus." << endl;
+			cout << "De plus, le joueur ne dispose que de trois vie" << endl << endl;
+
+			system("pause");
+			break;
+		case '3':
+			cout << "Items\tDescription" << endl << endl;
+			SetConsoleTextAttribute(hConsole, 14);
+			cout << " O   \t";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "La twistitie permet une immunisation, durant un certain temps, contre les virus" << endl << endl;
+			cout << " o   \tLes rouleaux permettent une augmentation du nombre de point" << endl << endl;
+			SetConsoleTextAttribute(hConsole, 14);
+			cout << " V   \t";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "Le joueur" << endl << endl;
+			SetConsoleTextAttribute(hConsole, 14);
+			cout << " C   \t";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "Le virus" << endl << endl;
+			cout << " ";
+			SetConsoleTextAttribute(hConsole, 30);
+			cout << "C\t";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "Indique que le joueur est immunie contre le virus" << endl << endl;
+			cout << " ";
+			SetConsoleTextAttribute(hConsole, 30);
+			cout << "V\t";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "Indique que le joueur est immunie contre le virus" << endl << endl;
+			cout << " ";
+			SetConsoleTextAttribute(hConsole, 71);
+			cout << "#\t";
+			SetConsoleTextAttribute(hConsole, 15);
+			cout << "Le mur" << endl << endl;
+
+			system("pause");
+			break;
+		case '4':
+			break;
+		}
+		system("cls");
+
+	} while (choixI != '4');
 }
 
 //Permet de bouger le joueur avec les curseurs
